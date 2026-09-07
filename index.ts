@@ -40,3 +40,39 @@ app.get('/api/inventory/:id', (req: Request, res: Response) => {
   res.status(200).json(item);
 });
 
+app.post('/api/inventory', (req: Request, res: Response) => {
+  const { name, sku, price, stock, active } = req.body;
+
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    return res.status(400).json({ error: "Nombre inválido" });
+  }
+  if (!sku || typeof sku !== 'string' || sku.trim() === '') {
+    return res.status(400).json({ error: "SKU inválido" });
+  }
+  if (typeof price !== 'number' || price <= 0) {
+    return res.status(400).json({ error: "Precio inválido, debe ser mayor a 0" });
+  }
+  if (typeof stock !== 'number' || stock < 0 || !Number.isInteger(stock)) {
+    return res.status(400).json({ error: "Stock inválido, debe ser entero mayor o igual a 0" });
+  }
+  if (typeof active !== 'boolean') {
+    return res.status(400).json({ error: "Estado active inválido, debe ser booleano" });
+  }
+
+  const newItem: InventoryItem = {
+    id: nextId++,
+    name: name.trim(),
+    sku: sku.trim(),
+    price,
+    stock,
+    active
+  };
+
+  inventory.push(newItem);
+  res.status(201).json(newItem);
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`API corriendo en el puerto ${PORT}`);
+});
