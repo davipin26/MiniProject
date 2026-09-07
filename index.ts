@@ -24,3 +24,19 @@ app.get('/api/inventory', (req: Request, res: Response) => {
   res.status(200).json({ success: true, data: inventory, total: inventory.length });
 });
 
+app.get('/api/inventory/:id', (req: Request, res: Response) => {
+  const id = parseInt(req.params.id as string);
+  
+  if (isNaN(id) || id <= 0) {
+    return res.status(400).json({ error: "El ID debe ser un entero positivo" });
+  }
+
+  const item = inventory.find(i => i.id === id);
+  
+  if (!item) {
+    return res.status(404).json({ error: "Elemento no encontrado" });
+  }
+
+  res.status(200).json(item);
+});
+
