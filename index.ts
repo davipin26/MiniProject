@@ -19,3 +19,8 @@ let inventory: InventoryItem[] = [
 ];
 
 let nextId = 4;
+
+app.get('/api/inventory', (req: Request, res: Response) => {
+  res.status(200).json({ success: true, data: inventory, total: inventory.length });
+});
+
