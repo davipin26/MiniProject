@@ -20,10 +20,12 @@ let inventory: InventoryItem[] = [
 
 let nextId = 4;
 
+// GET /api/inventory - Obtener todos los elementos
 app.get('/api/inventory', (req: Request, res: Response) => {
   res.status(200).json({ success: true, data: inventory, total: inventory.length });
 });
 
+// GET /api/inventory/:id - Obtener un elemento por ID
 app.get('/api/inventory/:id', (req: Request, res: Response) => {
   const id = parseInt(req.params.id as string);
   
@@ -40,6 +42,7 @@ app.get('/api/inventory/:id', (req: Request, res: Response) => {
   res.status(200).json(item);
 });
 
+// POST /api/inventory - Crear un nuevo elemento
 app.post('/api/inventory', (req: Request, res: Response) => {
   const { name, sku, price, stock, active } = req.body;
 
@@ -70,6 +73,68 @@ app.post('/api/inventory', (req: Request, res: Response) => {
 
   inventory.push(newItem);
   res.status(201).json(newItem);
+});
+
+// PATCH /api/inventory/:id - Actualización parcial
+app.patch('/api/inventory/:id', (req: Request, res: Response) => {
+  const id = parseInt(req.params.id as string);
+
+  if (isNaN(id) || id <= 0) {
+    return res.status(400).json({ error: "El ID debe ser un entero positivo" });
+  }
+
+  const item = inventory.find(i => i.id === id);
+
+  if (!item) {
+    return res.status(404).json({ error: "Elemento no encontrado" });
+  }
+
+  const { name, sku, price, stock, active } = req.body;
+
+  if (name !== undefined && typeof name === 'string' && name.trim() !== '') {
+    item.name = name.trim();
+  }
+  if (sku !== undefined && typeof sku === 'string' && sku.trim() !== '') {
+    item.sku = sku.trim();
+  }
+  if (price !== undefined && typeof price === 'number' && price >= 0) {
+    item.price = price;
+  }
+  if (stock !== undefined && typeof stock === 'number' && stock >= 0 && Number.isInteger(stock)) {
+    item.stock = stock;
+  }
+  if (active !== undefined && typeof active === 'boolean') {
+    item.active = active;
+  }
+
+  res.status(200).json(item);
+});
+
+// DELETE /api/inventory/:id - Eliminar un elemento
+app.delete('/api/inventory/:id', (req: Request, res: Response) => {
+  const id = parseInt(req.params.id as string);
+
+  if (isNaN(id) || id <= 0) {
+    return res.status(400).json({ error: "El ID debe ser un entero positivo" });
+  }
+
+  const itemIndex = inventory.findIndex(i => i.id === id);
+
+  if (itemIndex === -1) {
+    return res.status(404).json({ error: "Elemento no encontrado" });
+  }
+
+  const deletedItem = inventory[itemIndex];
+  if (!deletedItem) {
+    return res.status(404).json({ error: "Elemento no encontrado" });
+  }
+
+  inventory.splice(itemIndex, 1);
+
+  res.status(200).json({
+    message: "Elemento eliminado correctamente",
+    item: deletedItem
+  });
 });
 
 const PORT = process.env.PORT || 3000;
